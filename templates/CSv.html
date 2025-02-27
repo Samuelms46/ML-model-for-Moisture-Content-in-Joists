@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moisture Content Predictor</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <h2>Predict Moisture Content in Joists</h2>
+
+    <!-- Manual Feature Input -->
+    <form id="featureForm">
+        <h3>Enter Features</h3>
+        <div id="featureInputs"></div>
+        <button type="button" onclick="predictMoisture()">Predict</button>
+    </form>
+
+    <hr>
+
+    <!-- CSV Upload -->
+    <h3>Upload CSV for Batch Prediction</h3>
+    <input type="file" id="csvFile" accept=".csv">
+    <button onclick="uploadCSV()">Upload & Predict</button>
+
+    <hr>
+
+    <!-- Results -->
+    <h3>Prediction Results</h3>
+    <p id="prediction"></p>
+
+    <table border="1" id="resultsTable">
+        <thead>
+            <tr>
+                <th>Index</th>
+                <th>Features</th>
+                <th>Predicted Moisture Content</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <!-- Graph -->
+    <div id="moistureGraph"></div>
+
+    <script>
+        // Generate 54 input fields dynamically
+        window.onload = function () {
+            let container = document.getElementById("featureInputs");
+            for (let i = 1; i <= 54; i++) {
+                let input = document.createElement("input");
+                input.type = "number";
+                input.name = `Feature${i}`;
+                input.placeholder = `Feature${i}`;
+                container.appendChild(input);
+            }
+        };
+
+        // Send feature input for prediction
+        function predictMoisture() {
+            let formData = new FormData(document.getElementById("featureForm"));
+            let features = [];
+            
+            for (let i = 1; i <= 54; i++) {
+                let value = parseFloat(formData.get(`Feature${i}`)) || 0;
+                features.push(value);
+            }
+
+            fetch('/predict', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ features: features })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('prediction').innerText = "Predicted Moisture Content: " + JSON.stringify(data.predictions);
+                addToTable(features, data.predictions);
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        // Upload CSV and process batch prediction
+        function uploadCSV() {
+            let file = document.getElementById('csvFile').files[0];
+            if (!file) {
+                alert("Please select a CSV file.");
+                return;
+            }
+
+            let reader = new FileReader();
+            reader.onload = function (event) {
+                let rows = event.target.result.split('\n').map(row => row.split(','));
+                let featuresArray = rows.map(cols => cols.map(Number));
+
+                fetch('/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ features: featuresArray })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    featuresArray.forEach((features, index) => addToTable(features, data.predictions[index], index));
+                })
+                .catch(error => console.error('Error:', error));
+            };
+            reader.readAsText(file);
+        }
+
+        // Add results to table and update graph
+        function addToTable(features, prediction, index = null) {
+            let table = document.getElementById('resultsTable').getElementsByTagName('tbody')[0];
+            let newRow = table.insertRow();
+            newRow.innerHTML = `<td>${index !== null ? index + 1 : table.rows.length + 1}</td>
+                                <td>${features.join(', ')}</td>
+                                <td>${prediction}</td>`;
+            updateGraph();
+        }
+
+        // Update moisture prediction graph
+        function updateGraph() {
+            let table = document.getElementById('resultsTable');
+            let rows = table.getElementsByTagName('tbody')[0].rows;
+            let x = [], y = [];
+
+            for (let i = 0; i < rows.length; i++) {
+                x.push(i + 1);
+                y.push(parseFloat(rows[i].cells[2].innerText));
+            }
+
+            Plotly.newPlot('moistureGraph', [{ x: x, y: y, type: 'scatter', mode: 'lines+markers' }], { title: 'Moisture Trend' });
+        }
+    </script>
+</body>
+</html>

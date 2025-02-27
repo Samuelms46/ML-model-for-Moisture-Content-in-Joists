@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Moisture Estimator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+    .card h2 {
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+    }
+    .input-group {
+      margin-bottom: 12px;
+    }
+    .input-group input {
+      padding: 8px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    button {
+      padding: 10px 15px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .prediction-list {
+      list-style-type: none;
+      padding: 0;
+    }
+    .prediction-list li {
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+    <form id="predictForm">
+        <form id="predictForm">
+            <input type="number" id="Feature1" name="Feature1" placeholder="Feature1" />
+            <input type="number" id="Feature2" name="Feature2" placeholder="Feature2" />
+            <input type="number" id="Feature3" name="Feature3" placeholder="Feature3" />
+            <input type="number" id="Feature4" name="Feature4" placeholder="Feature4" />
+            <input type="number" id="Feature5" name="Feature5" placeholder="Feature5" />
+            <input type="number" id="Feature6" name="Feature6" placeholder="Feature6" />
+            <input type="number" id="Feature7" name="Feature7" placeholder="Feature7" />
+            <input type="number" id="Feature8" name="Feature8" placeholder="Feature8" />
+            <input type="number" id="Feature9" name="Feature9" placeholder="Feature9" />
+            <input type="number" id="Feature10" name="Feature10" placeholder="Feature10" />
+            <input type="number" id="Feature11" name="Feature11" placeholder="Feature11" />
+            <input type="number" id="Feature12" name="Feature12" placeholder="Feature12" />
+            <input type="number" id="Feature13" name="Feature13" placeholder="Feature13" />
+            <input type="number" id="Feature14" name="Feature14" placeholder="Feature14" />
+            <input type="number" id="Feature15" name="Feature15" placeholder="Feature15" />
+            <input type="number" id="Feature16" name="Feature16" placeholder="Feature16" />
+            <input type="number" id="Feature17" name="Feature17" placeholder="Feature17" />
+            <input type="number" id="Feature18" name="Feature18" placeholder="Feature18" />
+            <input type="number" id="Feature19" name="Feature19" placeholder="Feature19" />
+            <input type="number" id="Feature20" name="Feature20" placeholder="Feature20" />
+            <input type="number" id="Feature21" name="Feature21" placeholder="Feature21" />
+            <input type="number" id="Feature22" name="Feature22" placeholder="Feature22" />
+            <input type="number" id="Feature23" name="Feature23" placeholder="Feature23" />
+            <input type="number" id="Feature24" name="Feature24" placeholder="Feature24" />
+            <input type="number" id="Feature25" name="Feature25" placeholder="Feature25" />
+            <input type="number" id="Feature26" name="Feature26" placeholder="Feature26" />
+            <input type="number" id="Feature27" name="Feature27" placeholder="Feature27" />
+            <input type="number" id="Feature28" name="Feature28" placeholder="Feature28" />
+            <input type="number" id="Feature29" name="Feature29" placeholder="Feature29" />
+            <input type="number" id="Feature30" name="Feature30" placeholder="Feature30" />
+            <input type="number" id="Feature31" name="Feature31" placeholder="Feature31" />
+            <input type="number" id="Feature32" name="Feature32" placeholder="Feature32" />
+            <input type="number" id="Feature33" name="Feature33" placeholder="Feature33" />
+            <input type="number" id="Feature34" name="Feature34" placeholder="Feature34" />
+            <input type="number" id="Feature35" name="Feature35" placeholder="Feature35" />
+            <input type="number" id="Feature36" name="Feature36" placeholder="Feature36" />
+            <input type="number" id="Feature37" name="Feature37" placeholder="Feature37" />
+            <input type="number" id="Feature38" name="Feature38" placeholder="Feature38" />
+            <input type="number" id="Feature39" name="Feature39" placeholder="Feature39" />
+            <input type="number" id="Feature40" name="Feature40" placeholder="Feature40" />
+            <input type="number" id="Feature41" name="Feature41" placeholder="Feature41" />
+            <input type="number" id="Feature42" name="Feature42" placeholder="Feature42" />
+            <input type="number" id="Feature43" name="Feature43" placeholder="Feature43" />
+            <input type="number" id="Feature44" name="Feature44" placeholder="Feature44" />
+            <input type="number" id="Feature45" name="Feature45" placeholder="Feature45" />
+            <input type="number" id="Feature46" name="Feature46" placeholder="Feature46" />
+            <input type="number" id="Feature47" name="Feature47" placeholder="Feature47" />
+            <input type="number" id="Feature48" name="Feature48" placeholder="Feature48" />
+            <input type="number" id="Feature49" name="Feature49" placeholder="Feature49" />
+            <input type="number" id="Feature50" name="Feature50" placeholder="Feature50" />
+            <input type="number" id="Feature51" name="Feature51" placeholder="Feature51" />
+            <input type="number" id="Feature52" name="Feature52" placeholder="Feature52" />
+            <input type="number" id="Feature53" name="Feature53" placeholder="Feature53" />
+            <input type="number" id="Feature54" name="Feature54" placeholder="Feature54" />
+        <button type="submit">Predict Moisture Content</button>
+    </form>  
+      <div id="predictionResult" class="card" style="display:none;">
+        <h2>Predicted Moisture Content</h2>
+        <ul id="predictionList" id="predictionList"></ul>
+      </div>
+  <script>
+    // Handle form submission
+    function submitForm(event) {
+      event.preventDefault();  // Prevent the default form submission
+  
+      const formData = {};
+
+           // Loop through 54 features dynamically
+            for (let i = 1; i <= 54; i++) {
+                let featureId = `Feature${i}`;
+                formData[featureId] = document.getElementById(featureId).value;
+             }
+      console.log(formData);  // Check the collected data
+
+  
+      fetch('/predict', {
+        method: 'POST',
+        body: new URLSearchParams(formData),  // Send data as form URL encoded
+      })
+      .then(response => response.text())  // Get the response as text
+      .then(html => {
+        document.body.innerHTML = html;  // Replace current body with updated HTML (including predictions)
+      })
+      .catch(error => console.error('Error:', error));
+    }
+  
+    // Add event listener to the form
+    document.getElementById('predictForm').addEventListener('submit', submitForm);
+  </script>  
+
+</body>
+</html>

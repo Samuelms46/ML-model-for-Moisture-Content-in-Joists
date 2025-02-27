@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moisture Content Estimation</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: auto; }
+        input, button { margin: 5px; padding: 8px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Moisture Content Estimation</h2>
+        
+        <!-- Manual Input Form -->
+        <h3>Enter Features Manually</h3>
+        <label>Temperature:</label> <input type="number" id="temp" placeholder="°C">
+        <label>Humidity:</label> <input type="number" id="humidity" placeholder="%">
+        <label>Time of Day:</label> <input type="number" id="hour" placeholder="Hour (0-23)">
+        <button onclick="predictMoisture()">Predict</button>
+        <p id="prediction"></p>
+        
+        <!-- File Upload -->
+        <h3>Upload CSV File</h3>
+        <input type="file" id="csvFile" accept=".csv">
+        <button onclick="uploadCSV()">Upload & Predict</button>
+        
+        <!-- Results Table -->
+        <h3>Predictions</h3>
+        <table id="resultsTable">
+            <thead>
+                <tr>
+                    <th>Temperature (°C)</th>
+                    <th>Humidity (%)</th>
+                    <th>Hour</th>
+                    <th>Moisture Content</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        
+        <!-- Visualization -->
+        <h3>Moisture Trend</h3>
+        <div id="moistureGraph" style="width:100%; height:400px;"></div>
+    </div>
+    
+    <script>
+        function predictMoisture() {
+            let temp = document.getElementById('temp').value;
+            let humidity = document.getElementById('humidity').value;
+            let hour = document.getElementById('hour').value;
+            
+            if (!temp || !humidity || !hour) {
+                alert("Please fill all fields.");
+                return;
+            }
+            
+            // Dummy prediction logic (replace with API call)
+            let moisture = (parseFloat(temp) * 0.5 + parseFloat(humidity) * 0.3 + parseFloat(hour) * 0.2).toFixed(2);
+            document.getElementById('prediction').innerText = "Predicted Moisture Content: " + moisture + "%";
+            
+            addToTable(temp, humidity, hour, moisture);
+        }
+        
+        function uploadCSV() {
+            let file = document.getElementById('csvFile').files[0];
+            if (!file) {
+                alert("Please select a CSV file.");
+                return;
+            }
+            let reader = new FileReader();
+            reader.onload = function(event) {
+                let rows = event.target.result.split('\n');
+                rows.forEach(row => {
+                    let cols = row.split(',');
+                    if (cols.length === 3) {
+                        let temp = cols[0];
+                        let humidity = cols[1];
+                        let hour = cols[2];
+                        let moisture = (parseFloat(temp) * 0.5 + parseFloat(humidity) * 0.3 + parseFloat(hour) * 0.2).toFixed(2);
+                        addToTable(temp, humidity, hour, moisture);
+                    }
+                });
+            };
+            reader.readAsText(file);
+        }
+        
+        function addToTable(temp, humidity, hour, moisture) {
+            let table = document.getElementById('resultsTable').getElementsByTagName('tbody')[0];
+            let newRow = table.insertRow();
+            newRow.innerHTML = `<td>${temp}</td><td>${humidity}</td><td>${hour}</td><td>${moisture}%</td>`;
+            updateGraph();
+        }
+        
+        function updateGraph() {
+            let table = document.getElementById('resultsTable');
+            let rows = table.getElementsByTagName('tbody')[0].rows;
+            let x = [], y = [];
+            for (let i = 0; i < rows.length; i++) {
+                x.push(i);
+                y.push(parseFloat(rows[i].cells[3].innerText));
+            }
+            Plotly.newPlot('moistureGraph', [{ x: x, y: y, type: 'scatter', mode: 'lines+markers' }], { title: 'Moisture Trend' });
+        }
+    </script>
+</body>
+</html>
