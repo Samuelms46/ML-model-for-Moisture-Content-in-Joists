@@ -1,49 +1,3 @@
-# from flask import Flask, request, jsonify, render_template
-# import joblib
-# import numpy as np
-# import pandas as pd
-
-# # Load the trained model
-# model = joblib.load('student_model.pkl')
-
-# # Initialize Flask app
-# app = Flask(__name__)
-
-# @app.route('/')
-# def home():
-#     return render_template("CSv.html")
-
-# @app.route('/predict', methods=['POST'])
-# def predict():
-#     try:
-#         # Check if the request is JSON (single prediction)
-#         if request.is_json:
-#             data = request.get_json()
-#             features = np.array(data['features']).reshape(1, -1)  # Ensure 2D array for model
-#             predictions = model.predict(features)
-#             return jsonify({'predictions': predictions.tolist()})
-
-#         # Otherwise, check for file upload (CSV batch prediction)
-#         elif 'file' in request.files:
-#             file = request.files['file']
-#             df = pd.read_csv(file)
-#             if df.shape[1] != 54:  # Ensure it has exactly 54 columns
-#                 return jsonify({'error': 'CSV file must contain exactly 54 features'}), 400
-            
-#             predictions = model.predict(df.values)
-#             return jsonify({'predictions': predictions.tolist()})
-
-#         # If neither JSON nor CSV, return error
-#         return jsonify({'error': 'Invalid request format'}), 400
-    
-#     except Exception as e:
-#         return jsonify({'error': str(e)}), 500
-
-# # Run the Flask app
-# if __name__ == '__main__':
-#     from os import environ
-#     app.run(host='0.0.0.0', port=int(environ.get('PORT', 5000)))
-
 from flask import Flask, request, jsonify, render_template
 import joblib
 import numpy as np
@@ -51,21 +5,6 @@ import pandas as pd
 
 # Load the trained model
 model = joblib.load('student_model.pkl')
-
-label_mapping = {
-    0: 'BE2-MJoistUp-MC',
-    1: 'BE2-MJoistLo-MC',
-    2: 'BN1-MJoistLo-MC',
-    3:'BN1-MJoistUp-MC',
-    4:'BN2-MJoistLo-MC',
-    5:'BN2-MJoistUp-MC',
-    6:'BN3-MJoistLo-MC',
-    7:'BN3-MJoistUp-MC',
-    8:'BS-MJoistRight-MC',
-    9:'BS-MJoistLeft-MC',
-    10:'BW1-MJoistUp-MC', 
-    11:'BW1-MJoistLo-MC'
-}
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -82,8 +21,7 @@ def predict():
             data = request.get_json()
             features = np.array(data['features']).reshape(1, -1)  # Ensure 2D array for model
             predictions = model.predict(features)
-            labeled_predictions = [{"prediction": pred, "label": label_mapping.get(pred, "Unknown")} for pred in predictions]
-            return jsonify({'predictions': labeled_predictions})
+            return jsonify({'predictions': predictions.tolist()})
 
         # Otherwise, check for file upload (CSV batch prediction)
         elif 'file' in request.files:
@@ -93,8 +31,7 @@ def predict():
                 return jsonify({'error': 'CSV file must contain exactly 54 features'}), 400
             
             predictions = model.predict(df.values)
-            labeled_predictions = [{"prediction": pred, "label": label_mapping.get(pred, "Unknown")} for pred in predictions]
-            return jsonify({'predictions': labeled_predictions})
+            return jsonify({'predictions': predictions.tolist()})
 
         # If neither JSON nor CSV, return error
         return jsonify({'error': 'Invalid request format'}), 400
