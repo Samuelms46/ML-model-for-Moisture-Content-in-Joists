@@ -1,23 +1,27 @@
-# specifies which build engine used to build the image
-FROM python:3.10
+# Use official slim Python image
+FROM python:3.10-slim
 
-# specifies a working directory for our source code
+# Set the working directory in the container
 WORKDIR /app
 
-# Install dependencies
+# Copy only requirements first (for better Docker caching)
 COPY requirements.txt .
+
+# Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# copies your source code files
+# Copy your application files
 COPY app.py .
-COPY student_model.pkl .
 COPY ssl_1.py .
-COPY * cleaned4_data.csv 
+COPY student_model.pkl .
+COPY *cleaned4_data.csv .
 
-# specifies a port number for our image to run in a docker container
+# Set environment variables
+ENV FLASK_APP=app.py
+ENV FLASK_RUN_HOST=0.0.0.0
+
+# Expose the port your app runs on
 EXPOSE 8080
 
-# command to run our docker image in container
-CMD ["python", "app.py"]
-
-# CMD ["gunicorn", "--bind", "0.0.0.0:8080", "main:app", "--timeout", "120"]
+# Run the app with Gunicorn (4 workers, port 8080)
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:8080", "app:app"]
