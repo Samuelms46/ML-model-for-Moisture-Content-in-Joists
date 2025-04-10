@@ -1,4 +1,4 @@
-name: Build and Push Docker Image
+name: Build and Push Docker Image (Test)
 
 on:
   push:
@@ -13,11 +13,11 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Log in to Docker Hub
-        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+      - name: Log in to Docker Hub (Test Token)
+        run: echo "dckr_pat__7YWBOR3O5cwMf7shKZYUbt8fS0" | docker login -u "samuel0117" --password-stdin
 
       - name: Build Docker Image
-        run: docker build -t your-dockerhub-username/your-image-name:latest .
+        run: docker build -t samuel0117/test-image:latest .
 
       - name: Push Docker Image
-        run: docker push your-dockerhub-username/your-image-name:latest
+        run: docker push samuel0117/test-image:latest
