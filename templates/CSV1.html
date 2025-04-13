@@ -79,8 +79,7 @@
     <table border="1" id="resultsTable">
         <thead>
             <tr>
-                <th>Index</th>
-                <th>Features</th>
+                <th>Row</th>
                 <th>Prediction</th>
             </tr>
         </thead>
@@ -101,7 +100,7 @@
                 input.placeholder = `Feature ${i}`;
                 input.step = "any";
                 container.appendChild(input);
-            }
+           }
         };
 
         // Clear previous messages
@@ -138,7 +137,7 @@
                     return;
                 }
                 document.getElementById('prediction').innerText = `Prediction: ${data.predictions.join(', ')}`;
-                addToTable(features, data.predictions[0]);
+                addToTable(data.predictions[0], table.rows.length + 1);
             })
             .catch(error => {
                 document.getElementById('loading').style.display = 'none';
@@ -183,7 +182,7 @@
                 let tbody = document.getElementById('resultsTable').getElementsByTagName('tbody')[0];
                 tbody.innerHTML = ''; // Clear table
                 data.predictions.forEach((pred, index) => {
-                    addToTable(['CSV Input'], pred, index); // Placeholder for features
+                    addToTable(pred, index + 1);
                 });
             })
             .catch(error => {
@@ -195,11 +194,10 @@
         }
 
         // Add results to table and update graph
-        function addToTable(features, prediction, index = null) {
+        function addToTable(prediction, rowIndex) {
             let table = document.getElementById('resultsTable').getElementsByTagName('tbody')[0];
             let newRow = table.insertRow();
-            newRow.innerHTML = `<td>${index !== null ? index + 1 : table.rows.length + 1}</td>
-                                <td>${features.join(', ')}</td>
+            newRow.innerHTML = `<td>${rowIndex}</td>
                                 <td>${prediction}</td>`;
             updateGraph();
         }
@@ -211,8 +209,8 @@
             let x = [], y = [];
 
             for (let i = 0; i < rows.length; i++) {
-                x.push(i + 1);
-                y.push(parseFloat(rows[i].cells[2].innerText) || 0);
+                x.push(parseInt(rows[i].cells[0].innerText));
+                y.push(parseFloat(rows[i].cells[1].innerText) || 0);
             }
 
             Plotly.newPlot('graph', [{
@@ -223,7 +221,7 @@
                 name: 'Predictions'
             }], {
                 title: 'Prediction Trend',
-                xaxis: { title: 'Prediction Index' },
+                xaxis: { title: 'Row Index' },
                 yaxis: { title: 'Prediction Value' }
             });
         }
