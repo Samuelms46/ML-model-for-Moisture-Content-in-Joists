@@ -15,7 +15,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return render_template("CSV1.html")
+    return render_template("CSv.html")
 
 @app.route('/predict', methods=['POST'])
 def predict():

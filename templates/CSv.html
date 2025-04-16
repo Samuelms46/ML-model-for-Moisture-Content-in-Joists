@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prediction Model</title>
+    <title>AquaWise Estimator</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <style>
@@ -51,7 +51,7 @@
     }
 </style>
 <body>
-    <h2>Predict with Model</h2>
+    <h2>Predict Moisture Content in Joists</h2>
 
     <!-- Manual Feature Input -->
     <form id="featureForm">
@@ -79,9 +79,10 @@
     <table border="1" id="resultsTable">
         <thead>
             <tr>
-                <th>Index</th>
-                <th>Features</th>
-                <th>Prediction</th>
+                <th>Row</th>
+                <th>Predictions  for the 12 Joist Points(BE2-MJoistuUp-MC,BE2-MJoistLo-MC,BN1-MJoistLo-MC
+                    BN1-MJoistUp-MC,BN2-MJoistLo-MC,BN2-MJoistUp-MC,BN3-MJoistLo-MC,BN3-MJoistUp-MC,BS-MJoistRight-MC,
+                    BS-MJoistLeft-MC,BW1-MJoistUp-MC,BW1-MJoistLo-MC)</th>
             </tr>
         </thead>
         <tbody></tbody>
@@ -115,14 +116,24 @@
         // Send feature input for single prediction
         function predictFeatures() {
             clearMessages();
-            document.getElementById('loading').style.display = 'block';
-
+            
+            // Collect feature values
             let formData = new FormData(document.getElementById("featureForm"));
             let features = [];
+
+            // Validate all 54 inputs
             for (let i = 1; i <= 54; i++) {
-                let value = parseFloat(formData.get(`Feature${i}`)) || 0;
-                features.push(value);
+                let value = formData.get(`Feature${i}`);
+                // Check if the input is empty, whitespace, or non-numeric
+                if (!value || value.trim() === '' || isNaN(parseFloat(value))) {
+                    document.getElementById('error').style.display = 'block';
+                    document.getElementById('error').innerText = `Please enter a valid number for Feature ${i}`;
+                    return;
+                }
+                features.push(parseFloat(value));
             }
+
+            document.getElementById('loading').style.display = 'block';
 
             fetch('/predict', {
                 method: 'POST',
@@ -138,7 +149,7 @@
                     return;
                 }
                 document.getElementById('prediction').innerText = `Prediction: ${data.predictions.join(', ')}`;
-                addToTable(features, data.predictions[0]);
+                addToTable(data.predictions[0], document.getElementById('resultsTable').rows.length);
             })
             .catch(error => {
                 document.getElementById('loading').style.display = 'none';
@@ -183,7 +194,7 @@
                 let tbody = document.getElementById('resultsTable').getElementsByTagName('tbody')[0];
                 tbody.innerHTML = ''; // Clear table
                 data.predictions.forEach((pred, index) => {
-                    addToTable(['CSV Input'], pred, index); // Placeholder for features
+                    addToTable(pred, index + 1);
                 });
             })
             .catch(error => {
@@ -195,11 +206,10 @@
         }
 
         // Add results to table and update graph
-        function addToTable(features, prediction, index = null) {
+        function addToTable(prediction, rowIndex) {
             let table = document.getElementById('resultsTable').getElementsByTagName('tbody')[0];
             let newRow = table.insertRow();
-            newRow.innerHTML = `<td>${index !== null ? index + 1 : table.rows.length + 1}</td>
-                                <td>${features.join(', ')}</td>
+            newRow.innerHTML = `<td>${rowIndex}</td>
                                 <td>${prediction}</td>`;
             updateGraph();
         }
@@ -211,8 +221,8 @@
             let x = [], y = [];
 
             for (let i = 0; i < rows.length; i++) {
-                x.push(i + 1);
-                y.push(parseFloat(rows[i].cells[2].innerText) || 0);
+                x.push(parseInt(rows[i].cells[0].innerText));
+                y.push(parseFloat(rows[i].cells[1].innerText) || 0);
             }
 
             Plotly.newPlot('graph', [{
@@ -223,7 +233,7 @@
                 name: 'Predictions'
             }], {
                 title: 'Prediction Trend',
-                xaxis: { title: 'Prediction Index' },
+                xaxis: { title: 'Row Index' },
                 yaxis: { title: 'Prediction Value' }
             });
         }
