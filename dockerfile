@@ -15,6 +15,7 @@ COPY app.py .
 COPY ssl_1.py .
 COPY student_model.pkl .
 COPY *cleaned4_data.csv .
+COPY templates/ templates/
 
 # Set environment variables
 ENV FLASK_APP=app.py
